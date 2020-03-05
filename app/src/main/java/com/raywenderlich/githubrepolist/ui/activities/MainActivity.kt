@@ -36,14 +36,32 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import com.raywenderlich.githubrepolist.R
-import com.raywenderlich.githubrepolist.data.Request
+import com.raywenderlich.githubrepolist.api.RepositoryRetriever
+import com.raywenderlich.githubrepolist.data.RepoResult
 import com.raywenderlich.githubrepolist.ui.adapters.RepoListAdapter
 import kotlinx.android.synthetic.main.activity_main.*
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : Activity() {
+    private val repoRetriever = RepositoryRetriever()
+
+    //A Retrofit callback object that has two overrides
+    private val callback = object : Callback<RepoResult> {
+        override fun onFailure(call: Call<RepoResult>, t: Throwable) {
+            Log.e("MainActivity", "Problem calling Github API", t)
+        }
+
+        override fun onResponse(call: Call<RepoResult>, response: Response<RepoResult>) {
+            response?.isSuccessful.let {
+                val resultList = RepoResult(response?.body()?.items ?: emptyList())
+                repoList.adapter = RepoListAdapter(resultList)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,13 +70,7 @@ class MainActivity : Activity() {
         repoList.layoutManager = LinearLayoutManager(this)
 
         if (isNetworkConnected()) {
-            doAsync {
-                val result = Request().run()
-                uiThread {
-                    //Update the recyclerview with the response from the network call
-                    repoList.adapter = RepoListAdapter(result)
-                }
-            }
+            repoRetriever.getRepositories(callback)
         } else {
             //Set an alert for the user
             AlertDialog.Builder(this).setTitle("No Internet Connection!")
