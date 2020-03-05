@@ -30,15 +30,21 @@
 
 package com.raywenderlich.githubrepolist.data
 
-import android.util.Log
+import com.google.gson.Gson
 import java.net.URL
 
 
-class Request(private val url: String) {
+class Request() {
 
-  fun run() {
-    //Make network request
-    val repoListJsonStr = URL(url).readText()
-    Log.d(javaClass.simpleName, repoListJsonStr)
-  }
+    companion object {
+        private val URL = "https://api.github.com/search/repositories"        //API endpoint
+        private val SEARCH = "q=mario+language:kotlin&sort=stars&order=desc"  //search term
+        private val COMPLETE_URL = "$URL?$SEARCH"
+    }
+
+    fun run(): RepoResult {
+        val repoListJsonString = URL(COMPLETE_URL).readText()
+        //parse the JSON into the data structures
+        return Gson().fromJson(repoListJsonString, RepoResult::class.java)
+    }
 }

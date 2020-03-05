@@ -41,37 +41,26 @@ import com.raywenderlich.githubrepolist.data.Request
 import com.raywenderlich.githubrepolist.ui.adapters.RepoListAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.longToast
 import org.jetbrains.anko.uiThread
 
 class MainActivity : Activity() {
-
-    private val items = listOf(
-            "JetBrains/kotlin - The Kotlin Programming Language",
-            "exercism/kotlin - Exercism exercises in Kotlin",
-            "cbeust/kobalt - A Kotlin-based build system for the JVM",
-            "JetBrains/kotlin - The Kotlin Programming Language",
-            "exercism/kotlin - Exercism exercises in Kotlin",
-            "cbeust/kobalt - A Kotlin-based build system for the JVM",
-            "JetBrains/kotlin - The Kotlin Programming Language"
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         repoList.layoutManager = LinearLayoutManager(this)
-        repoList.adapter = RepoListAdapter(items)
-
-        val url = "https://api.github.com/search/repositories?q=mario+language:kotlin&sort=stars&order=desc"
 
         if (isNetworkConnected()) {
             doAsync {
-                Request(url).run()
-                uiThread { longToast("Request performed!") }
+                val result = Request().run()
+                uiThread {
+                    //Update the recyclerview with the response from the network call
+                    repoList.adapter = RepoListAdapter(result)
+                }
             }
         } else {
-          //Set an alert for the user
+            //Set an alert for the user
             AlertDialog.Builder(this).setTitle("No Internet Connection!")
                     .setMessage("Pleas check your internet connection and try again")
                     .setPositiveButton(android.R.string.ok) { _, _ -> }
