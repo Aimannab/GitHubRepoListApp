@@ -38,7 +38,7 @@ class Request() {
 
     companion object {
         private val URL = "https://api.github.com/search/repositories"        //API endpoint
-        private val SEARCH = "q=mario+language:kotlin&sort=stars&order=desc"  //search term
+        private val SEARCH = "q=language:kotlin&sort=stars&order=desc"        //search term
         private val COMPLETE_URL = "$URL?$SEARCH"
     }
 
